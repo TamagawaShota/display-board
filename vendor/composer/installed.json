@@ -1,30 +1,35 @@
 [
     {
         "name": "linecorp/line-bot-sdk",
-        "version": "2.3.0",
-        "version_normalized": "2.3.0.0",
+        "version": "3.0.0",
+        "version_normalized": "3.0.0.0",
         "source": {
             "type": "git",
             "url": "https://github.com/line/line-bot-sdk-php.git",
-            "reference": "38528aaa3a1abc2809974ab65cdcb7579f9eb927"
+            "reference": "fd137644bef8155cdf903f670c2bcb3b66d18661"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/line/line-bot-sdk-php/zipball/38528aaa3a1abc2809974ab65cdcb7579f9eb927",
-            "reference": "38528aaa3a1abc2809974ab65cdcb7579f9eb927",
+            "url": "https://api.github.com/repos/line/line-bot-sdk-php/zipball/fd137644bef8155cdf903f670c2bcb3b66d18661",
+            "reference": "fd137644bef8155cdf903f670c2bcb3b66d18661",
             "shasum": ""
         },
         "require": {
-            "php": ">=5.4"
+            "php": ">=5.5"
         },
         "require-dev": {
-            "apigen/apigen": "~4.1",
             "indigophp/hash-compat": "~1.1.0",
             "phpmd/phpmd": "~2.4",
-            "phpunit/phpunit": "^4.8.24",
-            "squizlabs/php_codesniffer": "~2.6"
+            "phpunit/phpunit": "^4.8.24||^5||^6",
+            "squizlabs/php_codesniffer": "~2.6||^3",
+            "symfony/config": "^3.3",
+            "symfony/dependency-injection": "^3.3"
         },
-        "time": "2017-09-20T10:22:04+00:00",
+        "suggest": {
+            "apigen/apigen": "Install with roave/better-reflection:dev-master to generate docs",
+            "roave/better-reflection": "Required by apigen/apigen:dev-master"
+        },
+        "time": "2018-06-29T04:25:43+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {

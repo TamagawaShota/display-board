@@ -26,6 +26,7 @@ try {
 
 // 配列に格納された各イベントをループで処理
 foreach ($events as $event) {
+
   //ユーザIDを表示
   error_log($event->getUserID());
 
@@ -34,203 +35,85 @@ foreach ($events as $event) {
     error_log('Non message event has come');
     continue;
   }
-  /*
   // TextMessageクラスのインスタンスでなければ処理をスキップ
   if (!($event instanceof \LINE\LINEBot\Event\MessageEvent\TextMessage)) {
     error_log('Non text message has come');
     continue;
   }
-  */
   // オウム返し
-  //$bot->replyText($event->getReplyToken(), $event->getText());
+  // $bot->replyText($event->getReplyToken(), $event->getText());
 
-  /*
-  //サービス終了の通知を返信
-  $messageStr = 'サービスを終了しました。 ';
-  $messageStr = $messageStr . "\r\n";
-  $messageStr = $messageStr . "\r\n" . 'サービスに関するお問合せは、下記アドレスまでお願い致します。';
-  $messageStr = $messageStr . "\r\n" . 'iryo@sbs-infosys.co.jp';
-  $bot->replyText($event->getReplyToken(), $messageStr);
-  */
-  
-  
+  //ユーザID取得
+  $userId = $event->getUserID();
+
   if ($event instanceof \LINE\LINEBot\Event\MessageEvent\TextMessage) {
     //入力されたテキストを取得
-    $SectionName = $event->getText();
+    $inputText = $event->getText();
   }
+  if ($inputText == '診察予約'){
+    // LINE_IDを引数にして、URLを返す
 
-  if ($SectionName == '病院からのお知らせ'){
-    //リッチメニューから「病院からのお知らせ」
-    $messageStr = '外来診療日：月曜日～金曜日（祝日年末年始を除く） ';
+    $messageStr = 'https://sbs-marcs.herokuapp.com/reserve.php?line_id=' . $userId;
+    // $messageStr = 'https://sbs-marcs.herokuapp.com/reserve.php?line_id=222222222';
+    $bot->replyText($event->getReplyToken(), $messageStr);
+
+  } elseif($inputText == 'お知らせ') {
+    $messageStr = '診療日：月曜日～金曜日（祝日年末年始を除く） ';
     $messageStr = $messageStr . "\r\n" . '午前：08:00～11:00';
     $messageStr = $messageStr . "\r\n" . '午後：12:00～15:00（予約のみ）';
     $messageStr = $messageStr . "\r\n";
-    $messageStr = $messageStr . "\r\n" . '※初診の場合は、かかりつけ医からの当院宛の紹介状をお持ちください。';
-    $bot->replyText($event->getReplyToken(), $messageStr);
-  } elseif($SectionName == '電話連絡') {
-    //リッチメニューから「電話連絡」
-    $messageStr = '電話番号：';
     $messageStr = $messageStr . "\r\n" . '054-283-1450（代表）';
-    $messageStr = $messageStr . "\r\n";
-    $messageStr = $messageStr . "\r\n" . '予約受付時間：';
-    $messageStr = $messageStr . "\r\n" . '平日 10:00～17:00';
-    $messageStr = $messageStr . "\r\n";
-    $messageStr = $messageStr . "\r\n" . 'ホームページ：';
-    $messageStr = $messageStr . "\r\n" . 'http://www.sbs-infosys.co.jp/';
     $bot->replyText($event->getReplyToken(), $messageStr);
-    
-  } elseif($SectionName == '診療科を選択') {
-    // Carouselテンプレートメッセージを返信
-    // ダイアログの配列
-    $columnArray = array();
-    $colCnt = 0;
-    $CarouselNum = 1;
-    $jsonString = file_get_contents('https://primearch.jp/displaybd/db/departments/0000000001');
-    // 文字列を連想配列に変換
-    $obj = json_decode($jsonString, true);
-    foreach ($obj as $key => $val){
-      error_log($val["name"]);
-      //変数インクリメント
-      $colCnt++;
-      if ($colCnt == 1) {
-        //最初の列定義
-        $actionArray = array();
-      }
-      if ($colCnt <= 3) {
-        array_push($actionArray, new LINE\LINEBot\TemplateActionBuilder\MessageTemplateActionBuilder ($val["name"],$val["name"]));
-      }
-      if ($colCnt == 3) {
-        //最後の列定義
-        $column = new \LINE\LINEBot\MessageBuilder\TemplateBuilder\CarouselColumnTemplateBuilder (
-          '診療科選択' . $CarouselNum, '診療科を選択してください。', null, $actionArray);
-        // 配列に追加
-        array_push($columnArray, $column);
-        //変数初期化
-        $colCnt = 0;
-        //Carousel番号の変数インクリメント
-        $CarouselNum++;
-      }
-    }
-    //途中でLOOPを抜けた
-    if (($colCnt > 0) and ($colCnt < 3)) {
-      while($colCnt < 3) {
-        array_push($actionArray, new LINE\LINEBot\TemplateActionBuilder\MessageTemplateActionBuilder ('　','　'));
-        $colCnt++;
-      }
-      //最後の列定義
-      $column = new \LINE\LINEBot\MessageBuilder\TemplateBuilder\CarouselColumnTemplateBuilder (
-        '診療科選択' . $CarouselNum, '診療科を選択してください。', null, $actionArray);
-      // 配列に追加
-      array_push($columnArray, $column);
-    }
-    //選択メニュー表示
-    replyCarouselTemplate($bot, $event->getReplyToken(),'診療科選択', $columnArray);
 
-  } else {
-    /*
-    //入力された診療科から診療科コードを取得
-    $section_id = 0;
-    if ($SectionName=='内科'){
-      $section_id = 2;
-    } elseif ($SectionName=='消化器内科') {
-      $section_id = 4;
-    } elseif ($SectionName=='神経内科') {
-      $section_id = 8;
-    } elseif ($SectionName=='腎臓内科') {
-      $section_id = 9;
-    } elseif ($SectionName=='小児科') {
-      $section_id = 15;
-    } elseif ($SectionName=='外科') {
-      $section_id = 20;
-    } elseif ($SectionName=='形成外科') {
-      $section_id = 22;
-    } elseif ($SectionName=='整形外科') {
-      $section_id = 21;
-    } elseif ($SectionName=='皮膚科') {
-      $section_id = 27;
-    } elseif ($SectionName=='泌尿器科') {
-      $section_id = 28;
-    } elseif ($SectionName=='産婦人科') {
-      $section_id = 29;
-    } elseif ($SectionName=='眼科') {
-      $section_id = 31;
-    } elseif ($SectionName=='耳鼻科') {
-      $section_id = 32;
-    } elseif ($SectionName=='歯科口腔外科') {
-      $section_id = 40;
-    }
+  } elseif($inputText == 'MARCS') {
+    $messageStr = 'https://sbs-marcs.herokuapp.com/main.php';
+    $bot->replyText($event->getReplyToken(), $messageStr);
 
-    if ($section_id > 0) {
-      error_log("同じ診療科が存在した");
-      // PrimeKarte APIにアクセスし診察待ち状況を取得
-  */
-      //時間を取得
-      date_default_timezone_set('Asia/Tokyo');
-      $reqtime = date("His");
-      error_log($reqtime);
+  } elseif($inputText == '診察状況') {
 
-      if ($reqtime > '140000' or $reqtime < '083000') {
-        error_log("診察時間外のため、テスト的に10:30固定で問合せ");
-        $reqtime = '103000';
-      }
+    // // PrimeKarte APIにアクセスし診察待ち状況を取得
+    // $section_id = 2;
+    // //時間を取得
+    // date_default_timezone_set('Asia/Tokyo');
+    // $reqtime = date("His");
+    // error_log($reqtime);
+    // if ($reqtime > '140000' or $reqtime < '083000') {
+    //   error_log("診察時間外のため、テスト的に10:30固定で問合せ");
+    //   $reqtime = '103000';
+    // }
+    // $jsonString = file_get_contents('https://primearch.jp/displaybd/db/last/0000000001/1/20180507/000000/' . $reqtime . '?name=' . base64_encode('内科'));
+    // error_log('https://primearch.jp/displaybd/db/last/0000000001/1/20180507/000000/' . $reqtime . '?name=' . base64_encode('内科'));
+    // // 文字列を連想配列に変換
+    // $obj = json_decode($jsonString, true);
+    //
+    // $messageStr = '現在の診察状況';
+    // foreach ($obj as $key => $val){
+    //   error_log($key);
+    //   $messageStr = $messageStr . "\r\n";
+    //   $messageStr = $messageStr . "\r\n" . '現在診察中：' . $val["curNo"];
+    //   $messageStr = $messageStr . "\r\n" . 'もうすぐ呼ばれる方：' . "\r\n" . $val["waitNo01"];
+    //   if ($val["waitNo02"]>0) {
+    //     $messageStr = $messageStr . '、' . $val["waitNo02"];
+    //   }
+    //   if ($val["waitNo03"]>0) {
+    //     $messageStr = $messageStr . '、' . $val["waitNo03"];
+    //   }
+    // }
 
-      //$jsonString = file_get_contents('http://35.190.234.51/displaybd/db/last/0000000001/' . $section_id . '/20180507/000000/' . $reqtime);
-      //$jsonString = file_get_contents('https://primearch.jp/displaybd/db/last/0000000001/' . $section_id . '/20180507/000000/' . $reqtime);
-      $jsonString = file_get_contents('https://primearch.jp/displaybd/db/last/0000000001/1/20180507/000000/' . $reqtime . '?name=' . base64_encode($SectionName));
-      error_log('https://primearch.jp/displaybd/db/last/0000000001/1/20180507/000000/' . $reqtime . '?name=' . base64_encode($SectionName));
-      
-      // 文字列を連想配列に変換
-      $obj = json_decode($jsonString, true);
-      $messageStr = $SectionName . 'の診察状況';
-      foreach ($obj as $key => $val){
-        error_log($key);
-        $messageStr = $messageStr . "\r\n";
-        $messageStr = $messageStr . "\r\n" . '診察室：' . $val["rName"];
-        $messageStr = $messageStr . "\r\n" . '現在診察中：' . $val["curNo"];
-        $messageStr = $messageStr . "\r\n" . 'もうすぐ呼ばれる方：' . "\r\n" . $val["waitNo01"];
-        if ($val["waitNo02"]>0) {
-          $messageStr = $messageStr . '、' . $val["waitNo02"];
-        }
-        if ($val["waitNo03"]>0) {
-          $messageStr = $messageStr . '、' . $val["waitNo03"];
-        }
-      }
-      $bot->replyText($event->getReplyToken(), $messageStr);
-    /*
-    }
-    //診療科が見つからない場合は、リストを返す
-    if($section_id==0) {
-      error_log("同じ診療科が存在しなかった");
-      // アクションの配列
-      //$suggestArray = array('内科','外科','整形');
-      //$suggestArray = array('内科','消化器内科','神経内科','腎臓内科','小児科','外科','形成外科','整形外科','皮膚科','泌尿器科','産婦人科','眼科','耳鼻科','歯科口腔外科');
-      $suggestArray = array('内科','消化器内科','小児科','外科');
-      $actionArray = array();
-      //候補を全てアクションにして追加
-      foreach($suggestArray as $secname) {
-        array_push($actionArray, new LINE\LINEBot\TemplateActionBuilder\MessageTemplateActionBuilder ($secname, $secname));
-        error_log($secname);
-      }
+    $messageStr = '現在の診察状況';
+    $messageStr = $messageStr . "\r\n";
+    $messageStr = $messageStr . "\r\n" . '現在診察中：69';
+    $messageStr = $messageStr . "\r\n" . 'もうすぐ呼ばれる方：72、74、75';
 
-      if($SectionName=='診療科を選択') {
-        //リッチメニューから「診療科を選択」
-        $messageTitle = '診察状況をお知らせします。';
-      } else {
-        //入力された診療科が見つからない。
-        $messageTitle = '指定された診療科が見つかりませんでした。';
-      }
-
-      // Buttonsテンプレートを返信
-      $builder = new \LINE\LINEBot\MessageBuilder\TemplateMessageBuilder(
-        '見つかりませんでした。',
-        new \LINE\LINEBot\MessageBuilder\TemplateBuilder\ButtonTemplateBuilder ($messageTitle, '診療科を選択してください。', null, $actionArray));
-        $bot->replyMessage($event->getReplyToken(), $builder);
-    }
-    */
-    
+    $bot->replyText($event->getReplyToken(), $messageStr);
   }
-  
+
+
 }
+
+
+
+
 
 // テキストを返信。引数はLINEBot、返信先、テキスト
 function replyTextMessage($bot, $replyToken, $text) {
