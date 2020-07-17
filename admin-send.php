@@ -30,8 +30,8 @@ $bot = new \LINE\LINEBot($httpClient, ['channelSecret' => getenv('CHANNEL_SECRET
 
 					$message2 = "もうすぐ診察の時間です。 外出されている場合は、来院して頂きますようお願いします。";
 
-          if (!empty($_REQUEST)) {
-            //引数でLINE_IDを取得
+					if (!empty($_REQUEST)) {
+						//引数でLINE_IDを取得
 						$obj = $_REQUEST;
 						foreach ($obj as $key => $val){
 							error_log($key);
@@ -42,9 +42,9 @@ $bot = new \LINE\LINEBot($httpClient, ['channelSecret' => getenv('CHANNEL_SECRET
 								error_log($key);
 
 								$response = $bot->pushMessage($key, new \LINE\LINEBot\MessageBuilder\TextMessageBuilder($message));
-		            if (!$response->isSucceeded()) {
-		              error_log('Failed!'. $response->getHTTPStatus . ' ' . $response->getRawBody());
-		            }
+								if (!$response->isSucceeded()) {
+								error_log('Failed!'. $response->getHTTPStatus . ' ' . $response->getRawBody());
+								}
 							} elseif (substr_count($key, 'phone_no') == 1) {
 								//文字列にphone_noが含まれる場合
 								$key = substr($key, 9);	//PhoneNoアドレスを抜き取ります。
@@ -71,11 +71,11 @@ $bot = new \LINE\LINEBot($httpClient, ['channelSecret' => getenv('CHANNEL_SECRET
 							}
 						}
 
-            echo '<p>LINE通知またはメール通知を行いました。</p>';
+						echo '<p>LINE通知またはメール通知を行いました。</p>';
 						echo '<ul class="actions">';
 						echo '<li><a href="admin-list.php" class="button big">戻る</a></li>';
 						echo '</ul>';
-          }
+					}
 
 					?>
 				</section>
