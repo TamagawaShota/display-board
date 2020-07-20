@@ -57,7 +57,10 @@ foreach ($events as $event) {
     // 受付番号(4桁以下)
     if($inputText < 10000 || strlen($inputText) <= 4){
       // 登録処理
-      $messageStr = '受付番号を取得しました。' . $inputText;
+      $fCode = '0000000001';
+      date_default_timezone_set('Asia/Tokyo');
+      $reqtime = date("Ymd");
+      $messageStr = '受付番号を取得しました。' . $fCode . $inputText . $userId . $reqtime;
       $bot->replyText($event->getReplyToken(), $messageStr);
       continue;
     }
