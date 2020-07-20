@@ -60,7 +60,7 @@ foreach ($events as $event) {
       $fCode = '0000000001';
       date_default_timezone_set('Asia/Tokyo');
       $reqtime = date("Ymd");
-      $messageStr = '受付番号を取得しました。' . $fCode . $inputText . $userId . $reqtime;
+      $messageStr = '受付番号を取得しました。' . "\r\n" . $fCode . "\r\n" . $inputText . "\r\n" . $userId . "\r\n" . $reqtime;
       $bot->replyText($event->getReplyToken(), $messageStr);
       continue;
     }
