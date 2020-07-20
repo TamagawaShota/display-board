@@ -40,6 +40,7 @@ foreach ($events as $event) {
     error_log('Non text message has come');
     continue;
   }
+  
   // オウム返し
   // $bot->replyText($event->getReplyToken(), $event->getText());
 
@@ -50,6 +51,21 @@ foreach ($events as $event) {
     //入力されたテキストを取得
     $inputText = $event->getText();
   }
+
+  // 数値だった場合
+  if(is_numeric($inputText)){
+    // 受付番号(4桁以下)
+    if($inputText < 10000 || strlen($inputText) <= 4){
+      // 登録処理
+      $messageStr = '受付番号を取得しました。' . $inputText;
+      continue;
+    }
+    else{
+      $messageStr = '受付番号の値が正しくありません。';
+      $messageStr = $messageStr . "\r\n" . '再度入力をお願い致します。';
+    }
+  }
+
   if ($inputText == '診察予約'){
     // LINE_IDを引数にして、URLを返す
 
