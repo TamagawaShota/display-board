@@ -58,13 +58,13 @@ foreach ($events as $event) {
     if($inputText < 10000 || strlen($inputText) <= 4){
       // 登録処理
       $messageStr = '受付番号を取得しました。' . $inputText;
-      $bot->replyText($event->gerReplyToken(), $messageStr);
+      $bot->replyText($event->getReplyToken(), $messageStr);
       continue;
     }
     else{
       $messageStr = '受付番号の値が正しくありません。';
       $messageStr = $messageStr . "\r\n" . '再度入力をお願い致します。';
-      $bot->replyText($event->gerReplyToken(), $messageStr);
+      $bot->replyText($event->getReplyToken(), $messageStr);
     }
   }
 
