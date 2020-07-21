@@ -25,7 +25,8 @@ try {
 
 
 $userId = 'Udbe1177667bb097cc235b265e2df1139';
-$response = $bot->pushMessage($userId, 'もうすぐ呼ばれます。');
+$textMessageBuilder = new \LINE\LINEBot\MessageBuilder\TextMessageBuilder('もうすぐ呼ばれます。');
+$response = $bot->pushMessage($userId, $textMessageBuilder);
 // foreach($events as $event){
 //     $res_json = array();
 //     $res_json = json_decode($event);
