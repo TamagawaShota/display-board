@@ -70,7 +70,8 @@ foreach ($events as $event) {
       curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
       curl_setopt($ch, CURLOPT_POSTFIELDS, $obj);
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-      curl_setopt($ch, CURLOPT_URL, 'http://34.84.185.81/encounter-api/encounter/regist');
+      // curl_setopt($ch, CURLOPT_URL, 'http://34.84.185.81/encounter-api/encounter/regist');
+      curl_setopt($ch, CURLOPT_URL, 'https://polar-atoll-54097.herokuapp.com/http_post.php');
       $result=curl_exec($ch);
       echo 'RETURN:'.$result;
       curl_close($ch);
