@@ -56,11 +56,30 @@ foreach ($events as $event) {
   if(is_numeric($inputText)){
     // 受付番号(4桁以下)
     if($inputText < 10000 || strlen($inputText) <= 4){
-      // 登録処理
       $fCode = '0000000001';
+      // 現在の時刻を取得
       date_default_timezone_set('Asia/Tokyo');
       $reqtime = date("Ymd");
-      $messageStr = '受付番号を取得しました。' . "\r\n" . $fCode . "\r\n" . $inputText . "\r\n" . $userId . "\r\n" . $reqtime;
+      // json構築
+      $jsonString = array('fCode' => $fCode, 'no' => $inputText, 'id' => $userId, 'date' => $reqtime);
+      $obj = json_encode($jsonString);
+
+      // 登録処理
+      $ch = curl_init();
+      curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+      curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+      curl_setopt($ch, CURLOPT_POSTFIELDS, $obj);
+      curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+      curl_setopt($ch, CURLOPT_URL, 'http://34.84.185.81/encounter-api/encounter/regist');
+      $result=curl_exec($ch);
+      echo 'RETURN:'.$result;
+      curl_close($ch);
+      if(result==true){
+        $messageStr = '受付登録しました。' . "\r\n" . $fCode . "\r\n" . $inputText . "\r\n" . $userId . "\r\n" . $reqtime;
+      }
+      else{
+        $messageStr = '受付登録に失敗しました。';
+      }
       $bot->replyText($event->getReplyToken(), $messageStr);
       continue;
     }
