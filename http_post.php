@@ -23,14 +23,17 @@ try {
   error_log('parseEventRequest failed. InvalidEventRequestException => '.var_export($e, true));
 }
 
-foreach($events as $event){
-    $res_json = array();
-    $res_json = json_decode($event);
-    //$userId = $res_json->{'id'};
-    $userId = 'Udbe1177667bb097cc235b265e2df1139';
-    $recNum = $res_json->{'no'};
-    //$response = $bot->pushMessage('<to>', $textMessageBuilder);
-    $response = $bot->pushMessage($userId, 'もうすぐ呼ばれます。');
-}
+
+$userId = 'Udbe1177667bb097cc235b265e2df1139';
+$response = $bot->pushMessage($userId, 'もうすぐ呼ばれます。');
+// foreach($events as $event){
+//     $res_json = array();
+//     $res_json = json_decode($event);
+//     //$userId = $res_json->{'id'};
+//     $userId = 'Udbe1177667bb097cc235b265e2df1139';
+//     $recNum = $res_json->{'no'};
+//     //$response = $bot->pushMessage('<to>', $textMessageBuilder);
+//     $response = $bot->pushMessage($userId, 'もうすぐ呼ばれます。');
+// }
 
 ?>
