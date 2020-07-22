@@ -32,7 +32,7 @@ if(!empty($res_json)){
     $userId = $res_json->{'id'};
     // 受付番号
     $recNum = $res_json->{'no'};
-    $textMessageBuilder = new \LINE\LINEBot\MessageBuilder\TextMessageBuilder('あと〇人で呼ばれますので準備をお願い致します。' . "\r\n" . '受付番号:' . $recNum);
+    $textMessageBuilder = new \LINE\LINEBot\MessageBuilder\TextMessageBuilder('もうすぐ呼ばれますので準備をお願い致します。' . "\r\n" . '受付番号:' . $recNum);
 }
 else{
     $userId = 'Udbe1177667bb097cc235b265e2df1139';
