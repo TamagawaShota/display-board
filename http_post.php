@@ -24,33 +24,20 @@ try {
 }
 
 
-//$userId = 'Udbe1177667bb097cc235b265e2df1139';
-//$textMessageBuilder = new \LINE\LINEBot\MessageBuilder\TextMessageBuilder('もうすぐ呼ばれます。');
-//$response = $bot->pushMessage($userId, $textMessageBuilder);
+// json取得
 $json_string = file_get_contents('php://input');
 $res_json = json_decode($json_string);
 if(!empty($res_json)){
+    // LINEのuserId
     $userId = $res_json->{'id'};
+    // 受付番号
     $recNum = $res_json->{'no'};
-    $textMessageBuilder = new \LINE\LINEBot\MessageBuilder\TextMessageBuilder('json取得できた。' . '\r\n' . '受付番号:' . $recNum);
+    $textMessageBuilder = new \LINE\LINEBot\MessageBuilder\TextMessageBuilder('json取得できた。' . "\r\n" . '受付番号:' . $recNum);
 }
 else{
     $userId = 'Udbe1177667bb097cc235b265e2df1139';
-    $textMessageBuilder = new \LINE\LINEBot\MessageBuilder\TextMessageBuilder('json読み込めず...');
+    $textMessageBuilder = new \LINE\LINEBot\MessageBuilder\TextMessageBuilder('json読み込めませんでした。');
 }
-// if(!empty($events)){
-//     foreach($events as $event){
-//         $res_json = array();
-//         $res_json = json_decode($event);
-//         $userId = $res_json->{'id'};
-//         $recNum = $res_json->{'no'};
-//         $textMessageBuilder = new \LINE\LINEBot\MessageBuilder\TextMessageBuilder('json取得できた。' . '\r\n' . '受付番号:' . $recNum);
-//     }
-// }
-// else{
-//     $userId = 'Udbe1177667bb097cc235b265e2df1139';
-//     $textMessageBuilder = new \LINE\LINEBot\MessageBuilder\TextMessageBuilder('イベントではないです。');
-// }
 
 $response = $bot->pushMessage($userId, $textMessageBuilder);
 
