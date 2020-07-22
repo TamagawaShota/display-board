@@ -75,10 +75,10 @@ foreach ($events as $event) {
       echo 'RETURN:'.$result;
       curl_close($ch);
       if(result==true){
-        $messageStr = '受付登録しました。' . "\r\n" . $fCode . "\r\n" . $inputText . "\r\n" . $userId . "\r\n" . $reqtime;
+        $messageStr = '受付番号「' . $inputText . '」で登録が完了しました。';
       }
       else{
-        $messageStr = '受付登録に失敗しました。';
+        $messageStr = '受付が出来ませんでした。';
       }
       $bot->replyText($event->getReplyToken(), $messageStr);
       continue;
