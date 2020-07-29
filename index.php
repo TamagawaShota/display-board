@@ -4,9 +4,11 @@
 require_once __DIR__ . '/vendor/autoload.php';
 
 // アクセストークンを使いCurlHTTPClientをインスタンス化
-$httpClient = new \LINE\LINEBot\HTTPClient\CurlHTTPClient(getenv('CHANNEL_ACCESS_TOKEN'));
+//$httpClient = new \LINE\LINEBot\HTTPClient\CurlHTTPClient(getenv('CHANNEL_ACCESS_TOKEN'));
+$httpClient = new \LINE\LINEBot\HTTPClient\CurlHTTPClient('rxr77RGN/xCqLTkvUT5ew7oMWxb7zEkeYQUR9zQJEcghF+f7jg2vsrRYRxG7bE7fEaQxKDXy4XLaogvR9GBmFAmxpipo1vSQEVUA4gg+YUnZKaRNcw7O4QRL66qMwXbGSzeZXKg+Qy7Kd+8DFDkRxgdB04t89/1O/w1cDnyilFU=');
 // CurlHTTPClientとシークレットを使いLINEBotをインスタンス化
-$bot = new \LINE\LINEBot($httpClient, ['channelSecret' => getenv('CHANNEL_SECRET')]);
+//$bot = new \LINE\LINEBot($httpClient, ['channelSecret' => getenv('CHANNEL_SECRET')]);
+$bot = new \LINE\LINEBot($httpClient, ['channelSecret' => 'cfb786fff3c37e47e04fca6d4ff292d8']);
 // LINE Messaging APIがリクエストに付与した署名を取得
 $signature = $_SERVER['HTTP_' . \LINE\LINEBot\Constant\HTTPHeader::LINE_SIGNATURE];
 
@@ -92,24 +94,48 @@ foreach ($events as $event) {
 
   if ($inputText == '診察予約'){
     // LINE_IDを引数にして、URLを返す
-
     $messageStr = 'https://sbs-marcs.herokuapp.com/reserve.php?line_id=' . $userId;
-    // $messageStr = 'https://sbs-marcs.herokuapp.com/reserve.php?line_id=222222222';
-    $bot->replyText($event->getReplyToken(), $messageStr);
-
   } elseif($inputText == 'お知らせ') {
     $messageStr = '診療日：月曜日～金曜日（祝日年末年始を除く） ';
     $messageStr = $messageStr . "\r\n" . '午前：08:00～11:00';
     $messageStr = $messageStr . "\r\n" . '午後：12:00～15:00（予約のみ）';
-    $messageStr = $messageStr . "\r\n";
-    $messageStr = $messageStr . "\r\n" . '054-283-1450（代表）';
-    $bot->replyText($event->getReplyToken(), $messageStr);
-
   } elseif($inputText == 'MARCS') {
     $messageStr = 'https://sbs-marcs.herokuapp.com/main.php';
-    $bot->replyText($event->getReplyToken(), $messageStr);
+  } elseif($inputText == '連絡先'){
+    $messageStr = $messageStr . '電話番号：' . '054-283-1450（代表）';
+    $messageStr = $messageStr . "\r\n" . '予約受付時間：' . '08:00～15:00';
+    $messageStr = $messageStr . "\r\n" . '病院URL' . 'https://www.sbs-infosys.co.jp';
+  } elseif($inputText == '診察待ち状況') {
+    $fCode = '0000000001';
+    // 現在の時刻を取得
+    date_default_timezone_set('Asia/Tokyo');
+    $reqtime = date("Ymd");
+    // json構築
+    // ※必要なデータだけ構築する
+    $jsonString = array('fCode' => $fCode, 'no' => $inputText, 'id' => $userId, 'date' => $reqtime);
+    $obj = json_encode($jsonString);
 
-  } elseif($inputText == '診察状況') {
+    // 待ち状況取得処理
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $obj);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    // ※再度URLを確認して修正
+    curl_setopt($ch, CURLOPT_URL, 'http://34.84.185.81/encounter-api/encounter/regist');
+    $response=curl_exec($ch);
+    echo 'RETURN:'.$response;
+    curl_close($ch);
+    if(!empty($response)){
+      $data = json_decode($response);
+      // 診察待ち人数
+      $waitCount = $res_json->{'count'};
+      $messageStr = '只今の診察待ち人数：' . $waitCount . '名';
+    }
+    else{
+      $messageStr = '申し訳ありません。' . "\r\n" . '診察待ち状況を取得できませんでした。';
+    }
+    $bot->replyText($event->getReplyToken(), $messageStr);
 
     // // PrimeKarte APIにアクセスし診察待ち状況を取得
     // $section_id = 2;
@@ -140,10 +166,10 @@ foreach ($events as $event) {
     //   }
     // }
 
-    $messageStr = '現在の診察状況';
-    $messageStr = $messageStr . "\r\n";
-    $messageStr = $messageStr . "\r\n" . '現在診察中：69';
-    $messageStr = $messageStr . "\r\n" . 'もうすぐ呼ばれる方：72、74、75';
+    // $messageStr = '現在の診察状況';
+    // $messageStr = $messageStr . "\r\n";
+    // $messageStr = $messageStr . "\r\n" . '現在診察中：69';
+    // $messageStr = $messageStr . "\r\n" . 'もうすぐ呼ばれる方：72、74、75';
 
     $bot->replyText($event->getReplyToken(), $messageStr);
   }

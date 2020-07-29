@@ -1,0 +1,12 @@
+runtime: php72
+service: lineat
+
+handlers:
+    - url: /app/script
+      static_dir: app/script
+      secure: always
+      
+    - url: /.*
+      secure: always
+      redirect_http_response_code: 301
+      script: auto
