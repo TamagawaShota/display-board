@@ -135,7 +135,7 @@ foreach ($events as $event) {
     else{
       $messageStr = '申し訳ありません。' . "\r\n" . '診察待ち状況を取得できませんでした。';
     }
-    $bot->replyText($event->getReplyToken(), $messageStr);
+    //$bot->replyText($event->getReplyToken(), $messageStr);
 
     // // PrimeKarte APIにアクセスし診察待ち状況を取得
     // $section_id = 2;
@@ -170,10 +170,9 @@ foreach ($events as $event) {
     // $messageStr = $messageStr . "\r\n";
     // $messageStr = $messageStr . "\r\n" . '現在診察中：69';
     // $messageStr = $messageStr . "\r\n" . 'もうすぐ呼ばれる方：72、74、75';
-
-    $bot->replyText($event->getReplyToken(), $messageStr);
+    
   }
-
+  $bot->replyText($event->getReplyToken(), $messageStr);
 
 }
 
