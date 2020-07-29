@@ -129,7 +129,7 @@ foreach ($events as $event) {
     if(!empty($response)){
       $data = json_decode($response);
       // 診察待ち人数
-      $waitCount = $res_json->{'count'};
+      $waitCount = $data->{'count'};
       $messageStr = '只今の診察待ち人数：' . $waitCount . '名';
     }
     else{
