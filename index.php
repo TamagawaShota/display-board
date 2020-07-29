@@ -134,7 +134,7 @@ foreach ($events as $event) {
       $waitCount = $data->{'count'};
       $date = $data->{'date'};
       $messageStr = '只今の診察待ち人数：' . $waitCount . '名';
-      $messageStr = "\r\n" . $messageStr . $date;
+      $messageStr = $messageStr . "\r\n" .  $date;
     }
     else{
       $messageStr = '申し訳ありません。' . "\r\n" . '診察待ち状況を取得できませんでした。';
