@@ -72,8 +72,8 @@ foreach ($events as $event) {
       curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
       curl_setopt($ch, CURLOPT_POSTFIELDS, $obj);
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-      //curl_setopt($ch, CURLOPT_URL, 'http://34.84.185.81/encounter-api/encounter/regist');
-      curl_setopt($ch, CURLOPT_URL, 'http://10.146.0.2/encounter-api/encounter/regist');
+      curl_setopt($ch, CURLOPT_URL, 'http://34.84.185.81/encounter-api/encounter/regist');
+      //curl_setopt($ch, CURLOPT_URL, 'http://10.146.0.2/encounter-api/encounter/regist');
       $result=curl_exec($ch);
       echo 'RETURN:'.$result;
       curl_close($ch);
@@ -123,8 +123,8 @@ foreach ($events as $event) {
     curl_setopt($ch, CURLOPT_POSTFIELDS, $obj);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     // ※再度URLを確認して修正
-    //curl_setopt($ch, CURLOPT_URL, 'http://34.84.185.81/encounter-api/encounter/count/' . $fCode);
-    curl_setopt($ch, CURLOPT_URL, 'http://10.146.0.2/encounter-api/encounter/count/' . $fCode);
+    curl_setopt($ch, CURLOPT_URL, 'http://34.84.185.81/encounter-api/encounter/count/' . $fCode);
+    //curl_setopt($ch, CURLOPT_URL, 'http://10.146.0.2/encounter-api/encounter/count/' . $fCode);
     $response=curl_exec($ch);
     echo 'RETURN:'.$response;
     curl_close($ch);
@@ -132,7 +132,9 @@ foreach ($events as $event) {
       $data = json_decode($response);
       // 診察待ち人数
       $waitCount = $data->{'count'};
+      $date = $data->{'date'};
       $messageStr = '只今の診察待ち人数：' . $waitCount . '名';
+      $messageStr = "\r\n" . $messageStr . $date;
     }
     else{
       $messageStr = '申し訳ありません。' . "\r\n" . '診察待ち状況を取得できませんでした。';
