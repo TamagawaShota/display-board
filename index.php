@@ -2,13 +2,14 @@
 
 // Composerでインストールしたライブラリを一括読み込み
 require_once __DIR__ . '/vendor/autoload.php';
+include('line-channel.php');
 
 // アクセストークンを使いCurlHTTPClientをインスタンス化
 //$httpClient = new \LINE\LINEBot\HTTPClient\CurlHTTPClient(getenv('CHANNEL_ACCESS_TOKEN'));
-$httpClient = new \LINE\LINEBot\HTTPClient\CurlHTTPClient('rxr77RGN/xCqLTkvUT5ew7oMWxb7zEkeYQUR9zQJEcghF+f7jg2vsrRYRxG7bE7fEaQxKDXy4XLaogvR9GBmFAmxpipo1vSQEVUA4gg+YUnZKaRNcw7O4QRL66qMwXbGSzeZXKg+Qy7Kd+8DFDkRxgdB04t89/1O/w1cDnyilFU=');
+$httpClient = new \LINE\LINEBot\HTTPClient\CurlHTTPClient($channelAccessToken);
 // CurlHTTPClientとシークレットを使いLINEBotをインスタンス化
 //$bot = new \LINE\LINEBot($httpClient, ['channelSecret' => getenv('CHANNEL_SECRET')]);
-$bot = new \LINE\LINEBot($httpClient, ['channelSecret' => 'cfb786fff3c37e47e04fca6d4ff292d8']);
+$bot = new \LINE\LINEBot($httpClient, ['channelSecret' => $channelSecret]);
 // LINE Messaging APIがリクエストに付与した署名を取得
 $signature = $_SERVER['HTTP_' . \LINE\LINEBot\Constant\HTTPHeader::LINE_SIGNATURE];
 
@@ -124,7 +125,7 @@ foreach ($events as $event) {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     // ※再度URLを確認して修正
     curl_setopt($ch, CURLOPT_URL, 'http://34.84.185.81/cloud-displayboard/encounter/count/' . $fCode);
-    //curl_setopt($ch, CURLOPT_URL, 'http://10.146.0.2/encounter-api/encounter/count/' . $fCode);
+    //curl_setopt($ch, CURLOPT_URL, 'http://10.146.0.2/cloud-displayboard/encounter/count/' . $fCode);
     $response=curl_exec($ch);
     echo 'RETURN:'.$response;
     curl_close($ch);
@@ -132,9 +133,7 @@ foreach ($events as $event) {
       $data = json_decode($response);
       // 診察待ち人数
       $waitCount = $data->{'count'};
-      $date = $data->{'date'};
       $messageStr = '只今の診察待ち人数：' . $waitCount . '名';
-      $messageStr = $messageStr . "\r\n" .  $date;
     }
     else{
       $messageStr = '申し訳ありません。' . "\r\n" . '診察待ち状況を取得できませんでした。';
