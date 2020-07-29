@@ -123,7 +123,7 @@ foreach ($events as $event) {
     curl_setopt($ch, CURLOPT_POSTFIELDS, $obj);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     // ※再度URLを確認して修正
-    curl_setopt($ch, CURLOPT_URL, 'http://34.84.185.81/encounter-api/encounter/count/' . $fCode);
+    curl_setopt($ch, CURLOPT_URL, 'http://34.84.185.81/cloud-displayboard/encounter/count/' . $fCode);
     //curl_setopt($ch, CURLOPT_URL, 'http://10.146.0.2/encounter-api/encounter/count/' . $fCode);
     $response=curl_exec($ch);
     echo 'RETURN:'.$response;
