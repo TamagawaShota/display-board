@@ -72,7 +72,8 @@ foreach ($events as $event) {
       curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
       curl_setopt($ch, CURLOPT_POSTFIELDS, $obj);
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-      curl_setopt($ch, CURLOPT_URL, 'http://34.84.185.81/encounter-api/encounter/regist');
+      //curl_setopt($ch, CURLOPT_URL, 'http://34.84.185.81/encounter-api/encounter/regist');
+      curl_setopt($ch, CURLOPT_URL, 'http://10.146.0.2/encounter-api/encounter/regist');
       $result=curl_exec($ch);
       echo 'RETURN:'.$result;
       curl_close($ch);
@@ -112,7 +113,7 @@ foreach ($events as $event) {
     $reqtime = date("Ymd");
     // json構築
     // ※必要なデータだけ構築する
-    $jsonString = array('fCode' => $fCode, 'no' => $inputText, 'id' => $userId, 'date' => $reqtime);
+    $jsonString = array('date' => $reqtime);
     $obj = json_encode($jsonString);
 
     // 待ち状況取得処理
@@ -122,7 +123,8 @@ foreach ($events as $event) {
     curl_setopt($ch, CURLOPT_POSTFIELDS, $obj);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     // ※再度URLを確認して修正
-    curl_setopt($ch, CURLOPT_URL, 'http://34.84.185.81/encounter-api/encounter/regist');
+    //curl_setopt($ch, CURLOPT_URL, 'http://34.84.185.81/encounter-api/encounter/count/' . $fCode);
+    curl_setopt($ch, CURLOPT_URL, 'http://10.146.0.2/encounter-api/encounter/count/' . $fCode);
     $response=curl_exec($ch);
     echo 'RETURN:'.$response;
     curl_close($ch);
