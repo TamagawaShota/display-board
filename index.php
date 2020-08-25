@@ -60,17 +60,17 @@ foreach ($events as $event) {
   if(is_numeric($inputText)){
     // 受付番号(4桁以下)
     if($inputText < 10000 || strlen($inputText) <= 4){
-      $fCode = '0000000001';
       // 現在の時刻を取得
       date_default_timezone_set('Asia/Tokyo');
       $reqtime = date("Ymd");
       // json構築
-      $jsonString = array('fCode' => $fCode, 'no' => $inputText, 'id' => $userId, 'date' => $reqtime);
+      $jsonString = array('fCode' => $facilityCode, 'no' => $inputText, 'id' => $userId, 'date' => $reqtime);
       $obj = json_encode($jsonString);
 
       // 登録処理
       $result = curl_post('http://34.84.185.81/encounter-api/encounter/regist',$jsonString);
-      if($result==false){
+      // 返り値　成功：データ、失敗：false or 空
+      if(empty($result) || ! $result){
         $messageStr = 'サーバが応答しておりません。';
       }
       else{
@@ -81,45 +81,56 @@ foreach ($events as $event) {
     }
     else{
       $messageStr = '受付番号の値が正しくありません。';
-      $messageStr = $messageStr . "\r\n" . '再度入力をお願い致します。';
+      $messageStr = $messageStr . "\r\n" . '４桁以内の数値にて入力をお願いします。';
       $bot->replyText($event->getReplyToken(), $messageStr);
     }
   }
 
-  if ($inputText == '診察予約'){
-    // LINE_IDを引数にして、URLを返す
-    $messageStr = 'https://sbs-marcs.herokuapp.com/reserve.php?line_id=' . $userId;
-  } elseif($inputText == 'お知らせ') {
-    $messageStr = '診療日：月曜日～金曜日（祝日年末年始を除く） ';
-    $messageStr = $messageStr . "\r\n" . '午前：08:00～11:00';
-    $messageStr = $messageStr . "\r\n" . '午後：12:00～15:00（予約のみ）';
-  } elseif($inputText == 'MARCS') {
-    $messageStr = 'https://sbs-marcs.herokuapp.com/main.php';
-  } elseif($inputText == '連絡先'){
-    $messageStr = $messageStr . '電話番号：' . '054-283-1450（代表）';
-    $messageStr = $messageStr . "\r\n" . '予約受付時間：' . '08:00～15:00';
-    $messageStr = $messageStr . "\r\n" . '病院URL' . 'https://www.sbs-infosys.co.jp';
-  } elseif($inputText == '診察待ち状況') {
-    $fCode = '0000000001';
-    // 現在の時刻を取得
-    date_default_timezone_set('Asia/Tokyo');
-    $reqtime = date("Ymd");
-    // json構築
-    // ※必要なデータだけ構築する
-    $jsonString = array('date' => $reqtime);
-    $obj = json_encode($jsonString);
+  switch($inputText){
+    case '診察待ち状況':
+      // 現在の時刻を取得
+      date_default_timezone_set('Asia/Tokyo');
+      $reqtime = date("Ymd");
+      // json構築
+      // ※必要なデータだけ構築する
+      $jsonString = array('date' => $reqtime);
+      $obj = json_encode($jsonString);
 
-    // 待ち状況取得処理
-    $response = curl_get('http://34.84.185.81/cloud-displayboard/encounter/count/' . $fCode, $obj);
-    if(!empty($response)){
-      $data = json_decode($response);
-      // 診察待ち人数
-      $waitCount = $data->{'count'};
-      $messageStr = '只今の診察待ち人数：' . $waitCount . '名';
-    }
-    else{
-      $messageStr = '申し訳ありません。' . "\r\n" . '診察待ち状況を取得できませんでした。';
-    }
+      // 待ち状況取得処理(WebAPI側から待ち時間を取得)
+      $response = curl_get('http://34.84.185.81/cloud-displayboard/encounter/count/' . $facilityCode, $obj);
+      // 返り値　成功：データ、失敗：false or 空
+      if(empty($response) || ! $response){
+        $messageStr = 'サーバが応答しておりません。';
+      }
+      else{
+        $data = json_decode($response);
+        // 診察待ち人数
+        $waitCount = $data->{'count'};
+        $messageStr = '只今の診察待ち人数：' . $waitCount . '名';
+      }
+      break;
+    case '診察予約':
+      // LINE_IDを引数にして、URLを返す
+      $messageStr = 'https://sbs-marcs.herokuapp.com/reserve.php?line_id=' . $userId;
+      break;
+    case 'お知らせ':
+      $messageStr = '診療日：月曜日～金曜日（祝日年末年始を除く） ';
+      $messageStr = $messageStr . "\r\n" . '午前：08:00～11:00';
+      $messageStr = $messageStr . "\r\n" . '午後：12:00～15:00（予約のみ）';
+      break;
+    case 'MARCS':
+      $messageStr = 'https://sbs-marcs.herokuapp.com/main.php';
+      break;
+    case '連絡先':
+      $messageStr = $messageStr . '電話番号：' . '054-283-1450（代表）';
+      $messageStr = $messageStr . "\r\n" . '予約受付時間：' . '08:00～15:00';
+      $messageStr = $messageStr . "\r\n" . '病院URL' . 'https://www.sbs-infosys.co.jp';
+      break;
+    default:
+      $messageStr = '受付番号の値が正しくありません。';
+      $messageStr = $messageStr . "\r\n" . '４桁以内の数値にて入力をお願いします。';
+      $bot->replyText($event->getReplyToken(), $messageStr);
+      break;
   }
   $bot->replyText($event->getReplyToken(), $messageStr);
 
