@@ -3,6 +3,7 @@
 // Composerでインストールしたライブラリを一括読み込み
 require_once __DIR__ . '/vendor/autoload.php';
 include('line-channel.php');
+include('curl-relation.php');
 
 // アクセストークンを使いCurlHTTPClientをインスタンス化
 //$httpClient = new \LINE\LINEBot\HTTPClient\CurlHTTPClient(getenv('CHANNEL_ACCESS_TOKEN'));
@@ -68,21 +69,12 @@ foreach ($events as $event) {
       $obj = json_encode($jsonString);
 
       // 登録処理
-      $ch = curl_init();
-      curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-      curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
-      curl_setopt($ch, CURLOPT_POSTFIELDS, $obj);
-      curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-      curl_setopt($ch, CURLOPT_URL, 'http://34.84.185.81/encounter-api/encounter/regist');
-      //curl_setopt($ch, CURLOPT_URL, 'http://10.146.0.2/encounter-api/encounter/regist');
-      $result=curl_exec($ch);
-      echo 'RETURN:'.$result;
-      curl_close($ch);
-      if(result==true){
-        $messageStr = '受付番号「' . $inputText . '」で登録が完了しました。';
+      $result = curl_post('http://34.84.185.81/encounter-api/encounter/regist',$jsonString);
+      if($result==false){
+        $messageStr = 'サーバが応答しておりません。';
       }
       else{
-        $messageStr = '受付が出来ませんでした。';
+        $messageStr = '受付番号「' . $inputText . '」で登録が完了しました。';
       }
       $bot->replyText($event->getReplyToken(), $messageStr);
       continue;
@@ -118,17 +110,7 @@ foreach ($events as $event) {
     $obj = json_encode($jsonString);
 
     // 待ち状況取得処理
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $obj);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    // ※再度URLを確認して修正
-    curl_setopt($ch, CURLOPT_URL, 'http://34.84.185.81/cloud-displayboard/encounter/count/' . $fCode);
-    //curl_setopt($ch, CURLOPT_URL, 'http://10.146.0.2/cloud-displayboard/encounter/count/' . $fCode);
-    $response=curl_exec($ch);
-    echo 'RETURN:'.$response;
-    curl_close($ch);
+    $response = curl_get('http://34.84.185.81/cloud-displayboard/encounter/count/' . $fCode, $obj);
     if(!empty($response)){
       $data = json_decode($response);
       // 診察待ち人数
@@ -138,46 +120,11 @@ foreach ($events as $event) {
     else{
       $messageStr = '申し訳ありません。' . "\r\n" . '診察待ち状況を取得できませんでした。';
     }
-    //$bot->replyText($event->getReplyToken(), $messageStr);
-
-    // // PrimeKarte APIにアクセスし診察待ち状況を取得
-    // $section_id = 2;
-    // //時間を取得
-    // date_default_timezone_set('Asia/Tokyo');
-    // $reqtime = date("His");
-    // error_log($reqtime);
-    // if ($reqtime > '140000' or $reqtime < '083000') {
-    //   error_log("診察時間外のため、テスト的に10:30固定で問合せ");
-    //   $reqtime = '103000';
-    // }
-    // $jsonString = file_get_contents('https://primearch.jp/displaybd/db/last/0000000001/1/20180507/000000/' . $reqtime . '?name=' . base64_encode('内科'));
-    // error_log('https://primearch.jp/displaybd/db/last/0000000001/1/20180507/000000/' . $reqtime . '?name=' . base64_encode('内科'));
-    // // 文字列を連想配列に変換
-    // $obj = json_decode($jsonString, true);
-    //
-    // $messageStr = '現在の診察状況';
-    // foreach ($obj as $key => $val){
-    //   error_log($key);
-    //   $messageStr = $messageStr . "\r\n";
-    //   $messageStr = $messageStr . "\r\n" . '現在診察中：' . $val["curNo"];
-    //   $messageStr = $messageStr . "\r\n" . 'もうすぐ呼ばれる方：' . "\r\n" . $val["waitNo01"];
-    //   if ($val["waitNo02"]>0) {
-    //     $messageStr = $messageStr . '、' . $val["waitNo02"];
-    //   }
-    //   if ($val["waitNo03"]>0) {
-    //     $messageStr = $messageStr . '、' . $val["waitNo03"];
-    //   }
-    // }
-
-    // $messageStr = '現在の診察状況';
-    // $messageStr = $messageStr . "\r\n";
-    // $messageStr = $messageStr . "\r\n" . '現在診察中：69';
-    // $messageStr = $messageStr . "\r\n" . 'もうすぐ呼ばれる方：72、74、75';
-    
   }
   $bot->replyText($event->getReplyToken(), $messageStr);
 
 }
+
 
 
 
