@@ -1,6 +1,7 @@
 <?php
 // 施設コード
-$facilityCode = '0000000001';
+//$facilityCode = '0000000001';
+$facilityCode = '2214210409';
 // WebAPI接続先
 $webBaseUrl = 'https://www.pk-line.com/';
 /*
