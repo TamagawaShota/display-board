@@ -70,7 +70,7 @@ foreach ($events as $event) {
       $obj = json_encode($jsonString);
 
       // 登録処理
-      $result = curl_post($webBaseUrl . 'encounter-api/encounter/regist',$jsonString);
+      $result = curl_post($webBaseUrl . 'encounter-api/encounter/regist',$obj);
       // 返り値　成功：データ、失敗：false or 空
       if(empty($result) || ! $result){
         $messageStr = 'サーバが応答しておりません。';
