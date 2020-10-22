@@ -1,6 +1,8 @@
 <?php
 // 施設コード
 $facilityCode = '0000000001';
+// WebAPI接続先
+$webBaseUrl = 'https://www.pk-line.com/';
 /*
 $url：jsonを飛ばす宛先のURL
 $post：送信するパラメータ(エンコード済み)

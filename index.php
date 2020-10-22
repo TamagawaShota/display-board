@@ -4,6 +4,7 @@
 require_once __DIR__ . '/vendor/autoload.php';
 include('line-channel.php');
 include('curl-relation.php');
+include('logger.php');
 
 // アクセストークンを使いCurlHTTPClientをインスタンス化
 //$httpClient = new \LINE\LINEBot\HTTPClient\CurlHTTPClient(getenv('CHANNEL_ACCESS_TOKEN'));
@@ -56,6 +57,7 @@ foreach ($events as $event) {
     $inputText = $event->getText();
   }
 
+  Logger::Info('「' . $inputText . '」 が入力されました。');
   // 数値だった場合
   if(is_numeric($inputText)){
     // 受付番号(4桁以下)
@@ -68,10 +70,11 @@ foreach ($events as $event) {
       $obj = json_encode($jsonString);
 
       // 登録処理
-      $result = curl_post('http://34.84.185.81/encounter-api/encounter/regist',$jsonString);
+      $result = curl_post($webBaseUrl . 'encounter-api/encounter/regist',$jsonString);
       // 返り値　成功：データ、失敗：false or 空
       if(empty($result) || ! $result){
         $messageStr = 'サーバが応答しておりません。';
+        Logger::Error('サーバが応答しておりません。');
       }
       else{
         $messageStr = '受付番号「' . $inputText . '」で登録が完了しました。';
@@ -97,10 +100,12 @@ foreach ($events as $event) {
       $obj = json_encode($jsonString);
 
       // 待ち状況取得処理(WebAPI側から待ち時間を取得)
-      $response = curl_get('http://34.84.185.81/cloud-displayboard/encounter/count/' . $facilityCode, $obj);
+      // $response = curl_get('http://34.84.185.81/cloud-displayboard/encounter/count/' . $facilityCode, $obj);
+      $response = curl_get( $webBaseUrl . 'cloud-displayboard/encounter/count/' . $facilityCode, $obj);
       // 返り値　成功：データ、失敗：false or 空
       if(empty($response) || ! $response){
         $messageStr = 'サーバが応答しておりません。';
+        Logger::Error('サーバが応答しておりません。');
       }
       else{
         $data = json_decode($response);
@@ -109,17 +114,10 @@ foreach ($events as $event) {
         $messageStr = '只今の診察待ち人数：' . $waitCount . '名';
       }
       break;
-    case '診察予約':
-      // LINE_IDを引数にして、URLを返す
-      $messageStr = 'https://sbs-marcs.herokuapp.com/reserve.php?line_id=' . $userId;
-      break;
     case 'お知らせ':
       $messageStr = '診療日：月曜日～金曜日（祝日年末年始を除く） ';
       $messageStr = $messageStr . "\r\n" . '午前：08:00～11:00';
       $messageStr = $messageStr . "\r\n" . '午後：12:00～15:00（予約のみ）';
-      break;
-    case 'MARCS':
-      $messageStr = 'https://sbs-marcs.herokuapp.com/main.php';
       break;
     case '連絡先':
       $messageStr = $messageStr . '電話番号：' . '054-283-1450（代表）';
