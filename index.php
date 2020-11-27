@@ -2,16 +2,14 @@
 
 // Composerでインストールしたライブラリを一括読み込み
 require_once __DIR__ . '/vendor/autoload.php';
-include('line-channel.php');
-include('curl-relation.php');
-include('logger.php');
+require_once('curl-relation.php');
+require_once('logger.php');
+require_once('config/access.php');
 
 // アクセストークンを使いCurlHTTPClientをインスタンス化
-//$httpClient = new \LINE\LINEBot\HTTPClient\CurlHTTPClient(getenv('CHANNEL_ACCESS_TOKEN'));
-$httpClient = new \LINE\LINEBot\HTTPClient\CurlHTTPClient($channelAccessToken);
+$httpClient = new \LINE\LINEBot\HTTPClient\CurlHTTPClient(LINEInfo::GetAccessToken());
 // CurlHTTPClientとシークレットを使いLINEBotをインスタンス化
-//$bot = new \LINE\LINEBot($httpClient, ['channelSecret' => getenv('CHANNEL_SECRET')]);
-$bot = new \LINE\LINEBot($httpClient, ['channelSecret' => $channelSecret]);
+$bot = new \LINE\LINEBot($httpClient, ['channelSecret' => LINEInfo::GetChannelSecret()]);
 // LINE Messaging APIがリクエストに付与した署名を取得
 $signature = $_SERVER['HTTP_' . \LINE\LINEBot\Constant\HTTPHeader::LINE_SIGNATURE];
 
@@ -45,9 +43,6 @@ foreach ($events as $event) {
     error_log('Non text message has come');
     continue;
   }
-  
-  // オウム返し
-  // $bot->replyText($event->getReplyToken(), $event->getText());
 
   //ユーザID取得
   $userId = $event->getUserID();
@@ -61,75 +56,67 @@ foreach ($events as $event) {
   // 数値だった場合
   if(is_numeric($inputText)){
     // 受付番号(4桁以下)
-    if($inputText < 10000 || strlen($inputText) <= 4){
+    if($inputText < 10000 && strlen($inputText) <= 4){
       // 現在の時刻を取得
       date_default_timezone_set('Asia/Tokyo');
       $reqtime = date("Ymd");
       // json構築
-      $jsonString = array('fCode' => $facilityCode, 'no' => $inputText, 'id' => $userId, 'date' => $reqtime);
+      $jsonString = array('fCode' => Byoin::GetFacilityCode(), 'no' => $inputText, 'id' => $userId, 'date' => $reqtime);
       $obj = json_encode($jsonString);
 
       // 登録処理
-      $result = curl_post($webBaseUrl . 'encounter-api/encounter/regist',$obj);
-      // 返り値　成功：データ、失敗：false or 空
+      $result = curl_post(Byoin::GetBaseUrl() . 'encounter-api/encounter/regist',$obj);
+      // 返り値　成功：1、失敗：false or 空
       if(empty($result) || ! $result){
-        $messageStr = 'サーバが応答しておりません。';
-        Logger::Error('サーバが応答しておりません。');
+        $messageStr = Message::$notResponseMessage;
+        Logger::Error('return:' . $result . "\r\n" . '【登録】' . Message::$notResponseMessage);
       }
       else{
         $messageStr = '受付番号「' . $inputText . '」で登録が完了しました。';
       }
-      $bot->replyText($event->getReplyToken(), $messageStr);
-      continue;
     }
     else{
-      $messageStr = '受付番号の値が正しくありません。';
-      $messageStr = $messageStr . "\r\n" . '４桁以内の数値にて入力をお願いします。';
-      $bot->replyText($event->getReplyToken(), $messageStr);
+      $messageStr = Message::$notReceptNumMessage;
+    }
+  }
+  else{
+    switch($inputText){
+      case '診察待ち状況':
+        // 現在の時刻を取得
+        date_default_timezone_set('Asia/Tokyo');
+        $reqtime = date("Ymd");
+        // json構築
+        // ※必要なデータだけ構築する
+        $jsonString = array('date' => $reqtime);
+        $obj = json_encode($jsonString);
+  
+        // 待ち状況取得処理(WebAPI側から待ち時間を取得)
+        $response = curl_get( Byoin::GetBaseUrl() . 'cloud-displayboard/encounter/count/' . Byoin::GetFacilityCode(), $obj);
+        // 返り値　成功：データ、失敗：false or 空
+        if(empty($response) || ! $response){
+          $messageStr =  Message::$notResponseMessage;
+          Logger::Error('return:' . $response . "\r\n" . '【待ち時間】' . Message::$notResponseMessage);
+        }
+        else{
+          $data = json_decode($response);
+          // 診察待ち人数
+          $waitCount = $data->{'count'};
+          $messageStr = '只今の診察待ち人数：' . $waitCount . '名';
+        }
+        break;
+      case 'お知らせ':
+        $messageStr = Byoin::GetNewsMessage();
+        break;
+      case '連絡先':
+        $messageStr = Byoin::GetContactMessage();
+        break;
+      default:
+        $messageStr = Message::$notReceptNumMessage;
+        break;
     }
   }
 
-  switch($inputText){
-    case '診察待ち状況':
-      // 現在の時刻を取得
-      date_default_timezone_set('Asia/Tokyo');
-      $reqtime = date("Ymd");
-      // json構築
-      // ※必要なデータだけ構築する
-      $jsonString = array('date' => $reqtime);
-      $obj = json_encode($jsonString);
-
-      // 待ち状況取得処理(WebAPI側から待ち時間を取得)
-      // $response = curl_get('http://34.84.185.81/cloud-displayboard/encounter/count/' . $facilityCode, $obj);
-      $response = curl_get( $webBaseUrl . 'cloud-displayboard/encounter/count/' . $facilityCode, $obj);
-      // 返り値　成功：データ、失敗：false or 空
-      if(empty($response) || ! $response){
-        $messageStr = 'サーバが応答しておりません。';
-        Logger::Error('サーバが応答しておりません。');
-      }
-      else{
-        $data = json_decode($response);
-        // 診察待ち人数
-        $waitCount = $data->{'count'};
-        $messageStr = '只今の診察待ち人数：' . $waitCount . '名';
-      }
-      break;
-    case 'お知らせ':
-      $messageStr = '診療日：月曜日～金曜日（祝日年末年始を除く） ';
-      $messageStr = $messageStr . "\r\n" . '午前：08:00～11:00';
-      $messageStr = $messageStr . "\r\n" . '午後：12:00～15:00（予約のみ）';
-      break;
-    case '連絡先':
-      $messageStr = $messageStr . '電話番号：' . '054-283-1450（代表）';
-      $messageStr = $messageStr . "\r\n" . '予約受付時間：' . '08:00～15:00';
-      $messageStr = $messageStr . "\r\n" . '病院URL' . 'https://www.sbs-infosys.co.jp';
-      break;
-    default:
-      $messageStr = '受付番号の値が正しくありません。';
-      $messageStr = $messageStr . "\r\n" . '４桁以内の数値にて入力をお願いします。';
-      $bot->replyText($event->getReplyToken(), $messageStr);
-      break;
-  }
+  // ユーザへ返信
   $bot->replyText($event->getReplyToken(), $messageStr);
 
 }
